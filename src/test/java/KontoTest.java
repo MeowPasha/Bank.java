@@ -18,42 +18,38 @@ public class KontoTest {
     //Abheben Tests mit zwei Parameter:
 
     @Test
-    public void negativeBetrag() {
+    public void negativeBetrag() throws GesperrtException {
         Konto k = new Girokonto();
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            k.abheben(-500, Waehrung.EUR);
-        });
+        boolean withdrawalResult = k.abheben(-500, Waehrung.EUR);
+        assertFalse(withdrawalResult);
     }
 
     @Test
-    public void infinityPositiveBetrag() {
+    public void infinityPositiveBetrag() throws GesperrtException {
         Konto k = new Girokonto();
         double positiveInfinity = Double.POSITIVE_INFINITY;
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            k.abheben(positiveInfinity, Waehrung.EUR);
-        });
+        boolean withdrawalResult = k.abheben(positiveInfinity, Waehrung.EUR);
+        assertFalse(withdrawalResult);
     }
 
     @Test
-    public void betragIsNaN() {
+    public void betragIsNaN() throws GesperrtException {
         Konto k = new Girokonto();
         double nanBetrag = Double.NaN;
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            k.abheben(nanBetrag, Waehrung.EUR);
-        });
+        boolean withdrawalResult = k.abheben(nanBetrag, Waehrung.EUR);
+        assertFalse(withdrawalResult);
     }
 
     @Test
-    public void infinityNegativeBetrag() {
+    public void infinityNegativeBetrag() throws GesperrtException {
         Konto k = new Girokonto();
         double negativeInfinity = Double.NEGATIVE_INFINITY;
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            k.abheben(negativeInfinity, Waehrung.EUR);
-        });
+        boolean withdrawalResult = k.abheben(negativeInfinity, Waehrung.EUR);
+        assertFalse(withdrawalResult);
     }
 
     @Test
@@ -76,13 +72,12 @@ public class KontoTest {
     }
 
     @Test
-    public void kontoIstGesprrtAbheben() {
+    public void kontoIstGesprrtAbheben() throws GesperrtException {
         Konto k = new Girokonto();
         k.sperren();
 
-        assertThrows(GesperrtException.class, () -> {
-            k.abheben(100);
-        });
+        boolean withdrawalResult = k.abheben(100);
+        assertFalse(withdrawalResult);
     }
 
     @Test

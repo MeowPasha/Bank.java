@@ -19,7 +19,7 @@ public class KontenSpielereien {
 	 * Testprogramm für Konten
 	 * @param args wird nicht benutzt
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws GesperrtException {
 	String sprache = "Deutsch";
 		switch(sprache) {
 			case "Deutsch" -> System.out.println("Guten Tag");
@@ -39,7 +39,8 @@ public class KontenSpielereien {
 		Kunde ich = new Kunde("Dorothea", "Hubrich", "zuhause", LocalDate.parse("1976-07-13"));
 
 		Girokonto meinGiro = new Girokonto(ich, 1234, 1000.0);
-		//meinGiro.einzahlen(50);
+		meinGiro.einzahlen(50);
+
 		System.out.println(meinGiro);
 		
 		Sparbuch meinSpar = new Sparbuch(ich, 9876);

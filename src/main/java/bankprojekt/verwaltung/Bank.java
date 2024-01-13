@@ -46,29 +46,14 @@ public class Bank implements Cloneable, Serializable {
         return kontoNummer;
     }
 
-    /**
-     * Creates a checking account (Girokonto) for a given customer and returns the account number.
-     *
-     * @param inhaber The account holder (customer).
-     * @return The account number.
-     */
-    public long girokontoErstellen(Kunde inhaber) {
-        if (inhaber == null) {
-            throw new NullPointerException();
-        }
-        long kontoNummer = kontoNummerErsteller();
-        Konto giroKonto = new Girokonto(inhaber, kontoNummer, dispo);
-        kontenListe.put(kontoNummer, giroKonto);
-        return kontoNummer;
-    }
 
-    public long sparbuchErstellen(Kunde inhaber) {
-        if (inhaber == null) {
+    public  long kontoErstellen(Kontofabrik fabrik, Kunde inhaber) {
+        if (inhaber == null || fabrik == null) {
             throw new NullPointerException();
         }
         long kontoNummer = kontoNummerErsteller();
-        Konto giroKonto = new Sparbuch(inhaber, kontoNummer);
-        kontenListe.put(kontoNummer, giroKonto);
+        Konto konto = fabrik.createKonto(inhaber, kontoNummer);
+        kontenListe.put(kontoNummer, konto);
         return kontoNummer;
     }
 

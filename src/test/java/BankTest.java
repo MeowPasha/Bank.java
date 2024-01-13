@@ -1,17 +1,22 @@
+import bankprojekt.verarbeitung.GirokontoFabrik;
 import bankprojekt.verarbeitung.Kunde;
+import bankprojekt.verarbeitung.SparbuchFabrik;
 import bankprojekt.verwaltung.Bank;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDate;
 
 public class BankTest {
 
+    GirokontoFabrik girokontoFabrik = new GirokontoFabrik();
+
     @Test
     public void checkIfCloneAndOriginalIsSame() {
         Bank bank = new Bank(1234);
         Kunde kunde = new Kunde("Tarik", "Balci", "MusterSTR", LocalDate.parse("2001-07-28"));
-        bank.girokontoErstellen(kunde);
+        bank.kontoErstellen(girokontoFabrik, kunde);
 
         byte[] bankSerialized = Bank.serialize(bank);
         byte[] cloneBank = bank.clone();
@@ -24,12 +29,12 @@ public class BankTest {
         Bank bank = new Bank(1234);
         Kunde kunde = new Kunde("Tarik", "Balci", "MusterSTR", LocalDate.parse("2001-07-28"));
         Kunde kunde1 = new Kunde("Muster","Mustermann","MusterSTR",LocalDate.parse("1999-10-01"));
-        bank.girokontoErstellen(kunde);
+        bank.kontoErstellen(girokontoFabrik,kunde);
 
         byte[] cloneBank = bank.clone();
 
         // add another Konto, after the clone method.
-        bank.girokontoErstellen(kunde1);
+        bank.kontoErstellen(girokontoFabrik,kunde1);
 
         byte[] bankSerialized = Bank.serialize(bank);
 

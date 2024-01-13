@@ -9,7 +9,7 @@ import java.util.concurrent.*;
 /**
  * stellt ein allgemeines Bank-Konto dar
  */
-public abstract class Konto implements Comparable<Konto> {
+public abstract class Konto implements Comparable<Konto>, Subject {
     /**
      * der Kontoinhaber
      */
@@ -29,6 +29,8 @@ public abstract class Konto implements Comparable<Konto> {
 
     private List<Aktie> aktienDepot;
 
+    private final List<Observer> observers = new ArrayList<>();
+
     private transient final ScheduledExecutorService service = new ScheduledThreadPoolExecutor(1);
 
     /**
@@ -38,6 +40,7 @@ public abstract class Konto implements Comparable<Konto> {
      */
     protected void setKontostand(double kontostand) {
         this.kontostand = kontostand;
+        notifyObservers("Your account balance has been changed, your new balance is: " + getKontostand());
     }
 
     /**
@@ -123,6 +126,28 @@ public abstract class Konto implements Comparable<Konto> {
         return gesperrt;
     }
 
+    @Override
+    public void addObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        observers.remove(observer);
+    }
+
+    @Override
+    public void notifyObservers(String message) {
+        for (Observer observer : observers) {
+            observer.update(message);
+        }
+    }
+
+    public void setState(String message) {
+        System.out.println("Durum değişti: " + message);
+        notifyObservers(message);
+    }
+
     /**
      * Erhöht den Kontostand um den eingezahlten Betrag.
      *
@@ -157,14 +182,25 @@ public abstract class Konto implements Comparable<Konto> {
      * @throws GesperrtException        wenn das Konto gesperrt ist
      * @throws IllegalArgumentException wenn der betrag negativ oder unendlich oder NaN ist
      */
-    public abstract boolean abheben(double betrag)
-            throws GesperrtException;
+    public boolean abheben(double betrag) throws GesperrtException {
+        if (betrag <= 0 || Double.isNaN(betrag) || Double.isInfinite(betrag)) {
+            return false;
+        }
+        if (this.geldCheck(betrag)) {
+            setKontostand(getKontostand() - betrag);
+            return true;
+        }
+        return false;
+    }
+
+    public abstract boolean geldCheck(double betrag);
 
     /**
      * sperrt das Konto, Aktionen zum Schaden des Benutzers sind nicht mehr möglich.
      */
     public void sperren() {
         this.gesperrt = true;
+        notifyObservers("Your account has been blocked!");
     }
 
     /**
@@ -172,6 +208,7 @@ public abstract class Konto implements Comparable<Konto> {
      */
     public final void entsperren() {
         this.gesperrt = false;
+        notifyObservers("Your account is unblocked!");
     }
 
 
@@ -242,7 +279,7 @@ public abstract class Konto implements Comparable<Konto> {
         }
         double tempBetrag = w.waehrungInEuroUmrechnen(betrag);
         tempBetrag = getAktuelleWaehrung().euroInWaehrungUmrechnen(tempBetrag);
-        kontostand = getKontostand() + tempBetrag;
+        setKontostand(getKontostand() + tempBetrag);
     }
 
     /**
@@ -271,14 +308,15 @@ public abstract class Konto implements Comparable<Konto> {
             kontostand = neu.euroInWaehrungUmrechnen(kontostand);
             typ = neu;
         }
+        notifyObservers("Your account currency has been changed to: " + typ);
     }
 
     /**
      * Executes a buy order for a specified number of shares of a given stock (Aktie)
      * when its current price falls below a specified maximum price.
      *
-     * @param a           The Aktie (stock) to be bought.
-     * @param anzahl      The number of shares to buy.
+     * @param a            The Aktie (stock) to be bought.
+     * @param anzahl       The number of shares to buy.
      * @param hoechstpreis The maximum price at which the purchase is triggered.
      * @return A Future representing the completion of the buy order, returning the total purchase cost.
      */

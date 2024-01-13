@@ -1,6 +1,8 @@
 package spielereien;
 
+import bankprojekt.verarbeitung.GirokontoFabrik;
 import bankprojekt.verarbeitung.Kunde;
+import bankprojekt.verarbeitung.SparbuchFabrik;
 import bankprojekt.verwaltung.Bank;
 
 import java.io.*;
@@ -11,8 +13,12 @@ public class BankSpielereien {
         Bank bank = new Bank(1234);
         Kunde kunde = new Kunde("Muster", "Mustermann", "MusterSTR", LocalDate.parse("2001-07-28"));
         Kunde kunde1 = new Kunde("Muster","Musterfrau","MusterSTR",LocalDate.parse("2007-01-18"));
-        bank.girokontoErstellen(kunde);
-        bank.girokontoErstellen(kunde1);
+
+        GirokontoFabrik girokontoFabrik = new GirokontoFabrik();
+        SparbuchFabrik sparbuchFabrik = new SparbuchFabrik();
+
+        bank.kontoErstellen(girokontoFabrik,kunde);
+        bank.kontoErstellen(sparbuchFabrik,kunde1);
 
         byte [] clonedBank = bank.clone();
 

@@ -91,17 +91,14 @@ public class Girokonto extends Konto implements Ueberweisungsfaehig, Serializabl
     }
 
     @Override
-    public boolean abheben(double betrag) throws GesperrtException {
-        if (betrag < 0 || Double.isNaN(betrag) || Double.isInfinite(betrag)) {
-            throw new IllegalArgumentException("Betrag ungültig");
-        }
-        if (this.isGesperrt())
-            throw new GesperrtException(this.getKontonummer());
-        if (getKontostand() - betrag >= -dispo) {
-            setKontostand(getKontostand() - betrag);
-            return true;
-        } else
+    public boolean geldCheck(double betrag) {
+        if (this.isGesperrt()) {
             return false;
+        }
+        if (getKontostand() - betrag >= -dispo) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -121,11 +118,3 @@ public class Girokonto extends Konto implements Ueberweisungsfaehig, Serializabl
         super.waehrungswechsel(neu);
     }
 }
-
-//abheben (double betrag) {
-//Betrag checken, gesperrt or not
-//
-//Wenn genug geld da ist (
-//reduziere Kontostand
-//extra Aktionen)
-//}
