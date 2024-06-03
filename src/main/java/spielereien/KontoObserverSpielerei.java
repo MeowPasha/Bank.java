@@ -4,13 +4,10 @@ import bankprojekt.verarbeitung.*;
 
 public class KontoObserverSpielerei {
     public static void main(String[] args) throws GesperrtException {
-        // Gözlemcileri ve gözlemlenecek nesneyi oluşturalım
-        KontoObserver observer1 = new KontoObserver("Observer 1");
+        PropertyChangeListenerKonto propertyChangeListenerKonto = new PropertyChangeListenerKonto();
 
         Konto konto = new Girokonto() {};
-
-        // Gözlemcileri gözlemlenecek nesneye ekleyelim
-        konto.addObserver(observer1);
+        konto.addPropertyChangeListener(propertyChangeListenerKonto);
 
         konto.einzahlen(1903);
         konto.einzahlen(3423);

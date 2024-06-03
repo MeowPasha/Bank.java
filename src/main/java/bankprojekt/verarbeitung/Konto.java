@@ -1,7 +1,10 @@
 package bankprojekt.verarbeitung;
 
 import com.google.common.primitives.Doubles;
+import javafx.beans.property.*;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -9,7 +12,7 @@ import java.util.concurrent.*;
 /**
  * stellt ein allgemeines Bank-Konto dar
  */
-public abstract class Konto implements Comparable<Konto>, Subject {
+public abstract class Konto implements Comparable<Konto> {
     /**
      * der Kontoinhaber
      */
@@ -23,31 +26,42 @@ public abstract class Konto implements Comparable<Konto>, Subject {
     /**
      * der aktuelle Kontostand
      */
-    private double kontostand;
-
+    private DoubleProperty kontostand = new ReadOnlyDoubleWrapper();
     private Waehrung typ = Waehrung.EUR;
 
     private List<Aktie> aktienDepot;
 
-    private final List<Observer> observers = new ArrayList<>();
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     private transient final ScheduledExecutorService service = new ScheduledThreadPoolExecutor(1);
+
+    private BooleanProperty minusPlus = new ReadOnlyBooleanWrapper();
+
+    /**
+     * Wenn das Konto gesperrt ist (gesperrt = true), können keine Aktionen daran mehr vorgenommen werden,
+     * die zum Schaden des Kontoinhabers wären (abheben, Inhaberwechsel)
+     */
+    private BooleanProperty gesperrt = new SimpleBooleanProperty();
 
     /**
      * setzt den aktuellen Kontostand
      *
      * @param kontostand neuer Kontostand
      */
-    protected void setKontostand(double kontostand) {
-        this.kontostand = kontostand;
-        notifyObservers("Your account balance has been changed, your new balance is: " + getKontostand());
+    public void setKontostand(double kontostand) {
+        Double oldValue = this.getKontostand();
+        this.kontostand.set(kontostand);
+
+        if (getKontostand() < 0) {
+            this.minusPlus.set(true);
+        } else {
+            this.minusPlus.set(false);
+        }
+
+        propertyChangeSupport.firePropertyChange("\n Your balance has been changed, ",
+                ":" + oldValue + "" + getAktuelleWaehrung() + ". ", ":" + getKontostand() + "" + getAktuelleWaehrung() + "\n");
     }
 
-    /**
-     * Wenn das Konto gesperrt ist (gesperrt = true), können keine Aktionen daran mehr vorgenommen werden,
-     * die zum Schaden des Kontoinhabers wären (abheben, Inhaberwechsel)
-     */
-    private boolean gesperrt;
 
     /**
      * Setzt die beiden Eigenschaften kontoinhaber und kontonummer auf die angegebenen Werte,
@@ -62,8 +76,8 @@ public abstract class Konto implements Comparable<Konto>, Subject {
             throw new IllegalArgumentException("Inhaber darf nicht null sein!");
         this.inhaber = inhaber;
         this.nummer = kontonummer;
-        this.kontostand = 0;
-        this.gesperrt = false;
+        this.kontostand.set(0);
+        this.gesperrt.set(false);
         this.aktienDepot = new ArrayList<>();
     }
 
@@ -93,7 +107,7 @@ public abstract class Konto implements Comparable<Konto>, Subject {
     public final void setInhaber(Kunde kinh) throws GesperrtException {
         if (kinh == null)
             throw new IllegalArgumentException("Der Inhaber darf nicht null sein!");
-        if (this.gesperrt)
+        if (this.gesperrt.get())
             throw new GesperrtException(this.nummer);
         this.inhaber = kinh;
 
@@ -105,7 +119,7 @@ public abstract class Konto implements Comparable<Konto>, Subject {
      * @return Kontostand
      */
     public double getKontostand() {
-        return kontostand;
+        return kontostand.get();
     }
 
     /**
@@ -123,29 +137,37 @@ public abstract class Konto implements Comparable<Konto>, Subject {
      * @return true, wenn das Konto gesperrt ist
      */
     public boolean isGesperrt() {
+        return gesperrt.get();
+    }
+
+    public ReadOnlyDoubleProperty kontostandProperty() {
+        return kontostand;
+    }
+
+    public ReadOnlyBooleanProperty minusPlusProperty() {
+        return minusPlus;
+    }
+
+    public ReadOnlyBooleanProperty gesperrtProperty() {
         return gesperrt;
     }
 
-    @Override
-    public void addObserver(Observer observer) {
-        observers.add(observer);
+    /**
+     * For adding propertyChangeListener
+     *
+     * @param listener, the listener which will get add.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public void removeObserver(Observer observer) {
-        observers.remove(observer);
-    }
-
-    @Override
-    public void notifyObservers(String message) {
-        for (Observer observer : observers) {
-            observer.update(message);
-        }
-    }
-
-    public void setState(String message) {
-        System.out.println("Durum değişti: " + message);
-        notifyObservers(message);
+    /**
+     * For removing propertyChangeListener
+     *
+     * @param listener, the listener which will get removed.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
     /**
@@ -199,16 +221,16 @@ public abstract class Konto implements Comparable<Konto>, Subject {
      * sperrt das Konto, Aktionen zum Schaden des Benutzers sind nicht mehr möglich.
      */
     public void sperren() {
-        this.gesperrt = true;
-        notifyObservers("Your account has been blocked!");
+        this.gesperrt.set(true);
+        propertyChangeSupport.firePropertyChange("Your account has been blocked! \n", ":unblocked, ", ":blocked!" + "\n");
     }
 
     /**
      * entsperrt das Konto, alle Kontoaktionen sind wieder möglich.
      */
     public final void entsperren() {
-        this.gesperrt = false;
-        notifyObservers("Your account is unblocked!");
+        this.gesperrt.set(false);
+        propertyChangeSupport.firePropertyChange("Your account is unblocked! \n", ":blocked, ", ":unblocked!" + "\n");
     }
 
 
@@ -218,7 +240,7 @@ public abstract class Konto implements Comparable<Konto>, Subject {
      * @return "GESPERRT", wenn das Konto gesperrt ist, ansonsten ""
      */
     public final String getGesperrtText() {
-        if (this.gesperrt) {
+        if (this.gesperrt.get()) {
             return "GESPERRT";
         } else {
             return "";
@@ -299,16 +321,18 @@ public abstract class Konto implements Comparable<Konto>, Subject {
      */
 
     public void waehrungswechsel(Waehrung neu) {
+        Waehrung oldWaehrung = getAktuelleWaehrung();
         if (getAktuelleWaehrung() == Waehrung.EUR) {
-            kontostand = neu.euroInWaehrungUmrechnen(getKontostand());
+            setKontostand(neu.euroInWaehrungUmrechnen(getKontostand()));
             typ = neu;
         }
         if (getAktuelleWaehrung() != Waehrung.EUR) {
-            kontostand = getAktuelleWaehrung().waehrungInEuroUmrechnen(kontostand);
-            kontostand = neu.euroInWaehrungUmrechnen(kontostand);
+            setKontostand(getAktuelleWaehrung().waehrungInEuroUmrechnen(getKontostand()));
+            setKontostand(neu.euroInWaehrungUmrechnen(getKontostand()));
             typ = neu;
         }
-        notifyObservers("Your account currency has been changed to: " + typ);
+        propertyChangeSupport.firePropertyChange("Your account currency has been changed, \n",
+                ": " + oldWaehrung + " ", ":" + typ + "\n");
     }
 
     /**
@@ -341,7 +365,7 @@ public abstract class Konto implements Comparable<Konto>, Subject {
                 System.out.println("Buying, " + anzahl + " " + a.getName() + "-stock for: " + gesamtkaufpreis + "€");
 
                 // Perform the purchase
-                kontostand -= gesamtkaufpreis;
+                this.setKontostand(getKontostand() - gesamtkaufpreis);
                 System.out.println("Kontostand: " + kontostand + "€");
 
                 for (int i = 0; i < anzahl; i++) {

@@ -1,4 +1,7 @@
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.*;
 
 import bankprojekt.verarbeitung.GesperrtException;
 import bankprojekt.verarbeitung.Waehrung;
@@ -6,6 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import bankprojekt.verarbeitung.Girokonto;
 import bankprojekt.verarbeitung.Konto;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.beans.PropertyChangeListener;
 
 public class KontoTest {
 
@@ -127,5 +134,75 @@ public class KontoTest {
         assertEquals(Waehrung.EUR, k.getAktuelleWaehrung());
     }
 
+
+    @Test
+    public void mockitoTestEinzahlen() throws GesperrtException {
+        // Create a mock for PropertyChangeListener
+        PropertyChangeListener mockListener = mock(PropertyChangeListener.class);
+
+        Konto konto = new Girokonto();
+        konto.addPropertyChangeListener(mockListener);
+
+        konto.einzahlen(1000);
+
+        // Verify that the firePropertyChange method was called
+        Mockito.verify(mockListener,times(1)).propertyChange(any());
+    }
+
+    @Test
+    public void mockitoTestSperren() {
+        // Create a mock for PropertyChangeListener
+        PropertyChangeListener mockListener = mock(PropertyChangeListener.class);
+
+        Konto konto = new Girokonto();
+        konto.addPropertyChangeListener(mockListener);
+
+        konto.sperren();
+
+        // Verify that the firePropertyChange method was called
+        Mockito.verify(mockListener,times(1)).propertyChange(any());
+    }
+
+    @Test
+    public void mockitoTestEntSperren() {
+        // Create a mock for PropertyChangeListener
+        PropertyChangeListener mockListener = mock(PropertyChangeListener.class);
+
+        Konto konto = new Girokonto();
+        konto.addPropertyChangeListener(mockListener);
+
+        konto.entsperren();
+
+        // Verify that the firePropertyChange method was called
+        Mockito.verify(mockListener,times(1)).propertyChange(any());
+    }
+
+//    @Test
+//    public void mockitoTestWaehrungChange() {
+//        // Create a mock for PropertyChangeListener
+//        PropertyChangeListener mockListener = mock(PropertyChangeListener.class);
+//
+//        Konto konto = new Girokonto();
+//        konto.addPropertyChangeListener(mockListener);
+//
+//        konto.waehrungswechsel(Waehrung.DKK);
+//
+//        // Verify that the firePropertyChange method was called
+//        Mockito.verify(mockListener,times(1)).propertyChange(any());
+//    }
+
+    @Test
+    public void mockitoTestAbheben() throws GesperrtException {
+        // Create a mock for PropertyChangeListener
+        PropertyChangeListener mockListener = mock(PropertyChangeListener.class);
+
+        Konto konto = new Girokonto();
+        konto.addPropertyChangeListener(mockListener);
+
+        konto.abheben(300);
+
+        // Verify that the firePropertyChange method was called
+        Mockito.verify(mockListener,times(1)).propertyChange(any());
+    }
 
 }
