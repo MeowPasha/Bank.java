@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="500.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bankprojekt.oberflaeche.KontoOberflaecheController">
+    <children>
+        <Pane>
+            <Text layoutX="14.0" layoutY="14.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Kontonummer:" />
+            <!-- Kontonummer'i doğrudan Konto nesnesinden al -->
+            <Text fx:id="nummer" layoutX="120.0" layoutY="14.0" strokeType="OUTSIDE" strokeWidth="0.0" text="${nummer}" />
+
+            <Text layoutX="14.0" layoutY="43.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Kontostand:" />
+            <!-- Kontostand'ı doğrudan Konto nesnesinden al -->
+            <Text fx:id="stand" layoutX="120.0" layoutY="43.0" strokeType="OUTSIDE" strokeWidth="0.0" text="${stand}" />
+
+            <Text layoutX="14.0" layoutY="72.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Kontoinhaber:" />
+            <!-- Kontoinhaber'i doğrudan Konto nesnesinden al -->
+            <Text fx:id="inhaber" layoutX="120.0" layoutY="72.0" strokeType="OUTSIDE" strokeWidth="0.0" text="${inhaber}" />
+
+            <Text layoutX="14.0" layoutY="101.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Kontotyp:" />
+            <!-- Kontotyp'i doğrudan Konto nesnesinden al -->
+            <Text fx:id="typ" layoutX="120.0" layoutY="101.0" strokeType="OUTSIDE" strokeWidth="0.0" text="${typ}" />
+        </Pane>
+        <Button layoutX="419.0" layoutY="268.0" mnemonicParsing="false" text="Einzahlen" />
+        <Button layoutX="421.0" layoutY="306.0" mnemonicParsing="false" text="Abheben" />
+    </children>
+</AnchorPane>
